@@ -1,0 +1,159 @@
+/* ------------------------------------------------------------------ */
+/*  Global reset & base                                               */
+/* ------------------------------------------------------------------ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Theme: CSS custom properties                                       */
+/* ------------------------------------------------------------------ */
+
+:root,
+.theme-dark {
+  --bg-root: #0b0f19;
+  --bg-surface: rgba(15, 20, 35, 0.8);
+  --bg-surface-2: rgba(255, 255, 255, 0.03);
+  --bg-hover: rgba(255, 255, 255, 0.06);
+  --bg-active: rgba(255, 255, 255, 0.08);
+  --bg-input: rgba(255, 255, 255, 0.04);
+  --bg-overlay: rgba(0, 0, 0, 0.6);
+  --bg-modal: #1a1f2e;
+
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-heading: #f1f5f9;
+
+  --border-default: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.12);
+  --border-input: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(99, 102, 241, 0.4);
+
+  --accent: #6366f1;
+  --accent-light: #818cf8;
+  --accent-text: #a5b4fc;
+  --accent-bg: rgba(99, 102, 241, 0.12);
+  --accent-border: rgba(99, 102, 241, 0.25);
+
+  --danger: #ef4444;
+  --danger-text: #fca5a5;
+  --danger-bg: rgba(239, 68, 68, 0.12);
+  --danger-border: rgba(239, 68, 68, 0.2);
+
+  --success: #22c55e;
+
+  --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.18);
+}
+
+.theme-light {
+  --bg-root: #f8fafc;
+  --bg-surface: rgba(255, 255, 255, 0.9);
+  --bg-surface-2: rgba(0, 0, 0, 0.02);
+  --bg-hover: rgba(0, 0, 0, 0.04);
+  --bg-active: rgba(0, 0, 0, 0.06);
+  --bg-input: rgba(0, 0, 0, 0.03);
+  --bg-overlay: rgba(0, 0, 0, 0.35);
+  --bg-modal: #fff;
+
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --text-heading: #0f172a;
+
+  --border-default: rgba(0, 0, 0, 0.06);
+  --border-hover: rgba(0, 0, 0, 0.12);
+  --border-input: rgba(0, 0, 0, 0.1);
+  --border-focus: rgba(99, 102, 241, 0.5);
+
+  --accent: #4f46e5;
+  --accent-light: #6366f1;
+  --accent-text: #4f46e5;
+  --accent-bg: rgba(99, 102, 241, 0.08);
+  --accent-border: rgba(99, 102, 241, 0.2);
+
+  --danger: #dc2626;
+  --danger-text: #dc2626;
+  --danger-bg: rgba(239, 68, 68, 0.08);
+  --danger-border: rgba(239, 68, 68, 0.15);
+
+  --success: #16a34a;
+
+  --scrollbar-thumb: rgba(0, 0, 0, 0.12);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.2);
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, 'Noto Sans', sans-serif;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--bg-root);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Selection */
+::selection {
+  background: rgba(99, 102, 241, 0.3);
+  color: #fff;
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  opacity: 0.8;
+}
+
+/* Remove default focus for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
