@@ -1,0 +1,240 @@
+/* ------------------------------------------------------------------ */
+/*  Preview overlay                                                   */
+/* ------------------------------------------------------------------ */
+
+.preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 1.5rem;
+  animation: preview-fade-in 0.15s ease-out;
+}
+
+@keyframes preview-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Preview container                                                 */
+/* ------------------------------------------------------------------ */
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  max-width: 90vw;
+  max-height: 90vh;
+  width: 100%;
+  border-radius: 16px;
+  background: var(--bg-modal);
+  border: 1px solid var(--border-input);
+  overflow: hidden;
+}
+
+.preview__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--border-default);
+  flex-shrink: 0;
+}
+
+.preview__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.preview__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.preview__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.preview__close:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Preview body                                                      */
+/* ------------------------------------------------------------------ */
+
+.preview__body {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Loading / error states                                            */
+/* ------------------------------------------------------------------ */
+
+.preview__loading,
+.preview__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem 2rem;
+  color: var(--text-muted);
+}
+
+.preview__spinner {
+  animation: preview-spin 0.8s linear infinite;
+  color: var(--accent);
+}
+
+@keyframes preview-spin {
+  to { transform: rotate(360deg); }
+}
+
+.preview__error {
+  color: var(--danger-text);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Image preview                                                     */
+/* ------------------------------------------------------------------ */
+
+.preview__image-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+}
+
+.preview__image {
+  max-width: 100%;
+  max-height: 82vh;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Video preview                                                     */
+/* ------------------------------------------------------------------ */
+
+.preview__video {
+  width: 100%;
+  max-height: 82vh;
+  background: #000;
+  border-radius: 0 0 8px 8px;
+  outline: none;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Audio preview                                                     */
+/* ------------------------------------------------------------------ */
+
+.preview__audio-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 2rem;
+}
+
+.preview__audio-icon {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--accent-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-light);
+}
+
+.preview__audio-name {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: center;
+  word-break: break-word;
+}
+
+.preview__audio {
+  width: 100%;
+  max-width: 480px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  PDF preview                                                       */
+/* ------------------------------------------------------------------ */
+
+.preview__pdf {
+  width: 100%;
+  height: 82vh;
+  border: none;
+  border-radius: 0 0 8px 8px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Text / JSON preview                                               */
+/* ------------------------------------------------------------------ */
+
+.preview__text {
+  width: 100%;
+  height: 82vh;
+  overflow: auto;
+  padding: 1.25rem;
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--bg-surface-2);
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Responsive                                                        */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 640px) {
+  .preview-overlay { padding: 0.5rem; }
+  .preview { max-width: 100vw; max-height: 100vh; border-radius: 0; }
+  .preview__header { padding: 0.6rem 1rem; }
+  .preview__title { font-size: 0.85rem; }
+  .preview__image { max-height: 75vh; }
+  .preview__video { max-height: 75vh; }
+  .preview__pdf { height: 75vh; }
+  .preview__text { height: 75vh; }
+}
