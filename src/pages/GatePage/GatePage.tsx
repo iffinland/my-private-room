@@ -81,10 +81,10 @@ export default function GatePage({ onAccountReady }: GatePageProps) {
           </div>
 
           <h1 className="gate__title">My File Office</h1>
-          <p className="gate__tagline">
-            Your personal file vault on the Qortium network.
-            Only you can see what's inside.
-          </p>
+<p className="gate__tagline">
+  This app is currently under development.
+  New features and improvements are coming soon.
+</p>
 
           {isBridgeAvailable === false && (
             <div className="gate__warning">
@@ -119,10 +119,9 @@ export default function GatePage({ onAccountReady }: GatePageProps) {
             )}
           </button>
 
-          <p className="gate__hint">
-            Your identity is verified through your Qortium account.
-            All files are visible only to you.
-          </p>
+<p className="gate__hint">
+  Some features are still experimental and may change during development.
+</p>
         </div>
       </div>
     </div>
