@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogIn, Shield, Loader2, AlertTriangle } from 'lucide-react';
 import type { QortiumAccount } from '../../types';
@@ -31,11 +31,7 @@ export default function GatePage({ onAccountReady }: GatePageProps) {
   const [bgUrl] = useState(() => BACKGROUNDS[Math.floor(Math.random() * BACKGROUNDS.length)]);
   const [isEntering, setIsEntering] = useState(false);
   const [error, setError] = useState('');
-  const [isBridgeAvailable, setIsBridgeAvailable] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    setIsBridgeAvailable(hasQortiumBridge());
-  }, []);
+  const [isBridgeAvailable] = useState<boolean | null>(() => hasQortiumBridge());
 
   const handleEnter = useCallback(async () => {
     setIsEntering(true);

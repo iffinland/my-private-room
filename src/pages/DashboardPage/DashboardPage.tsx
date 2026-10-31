@@ -24,11 +24,13 @@ import {
   StickyNote,
 } from 'lucide-react';
 import type { QortiumAccount, PrivateFile } from '../../types';
-import { searchMyFiles, deleteFile, fetchFileContent, canPreviewFile, FILE_CATEGORIES } from '../../services/fileService';
+import { searchMyFiles, deleteFile, fetchFileBytes, canPreviewFile, FILE_CATEGORIES } from '../../services/fileService';
 import { isAccountReady } from '../../services/qortium/accountService';
 import { useTheme } from '../../context/ThemeContext';
 import FilePublish from '../../components/FilePublish/FilePublish';
 import FilePreview from '../../components/FilePreview/FilePreview';
+import FileThumbnail from '../../components/FileThumbnail/FileThumbnail';
+import DescriptionDialog from '../../components/DescriptionDialog/DescriptionDialog';
 import './DashboardPage.css';
 
 interface DashboardPageProps {
@@ -60,7 +62,7 @@ export default function DashboardPage({ account, onLogout }: DashboardPageProps)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [previewFile, setPreviewFile] = useState<PrivateFile | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [noteFile, setNoteFile] = useState<PrivateFile | null>(null);
+  const [descriptionFile, setDescriptionFile] = useState<PrivateFile | null>(null);
 
   const ownerName = account?.names?.[0] ?? account?.name ?? '';
 
@@ -158,6 +160,7 @@ export default function DashboardPage({ account, onLogout }: DashboardPageProps)
       result = result.filter(
         (f) =>
           f.fileName.toLowerCase().includes(q) ||
+          (f.description ?? '').toLowerCase().includes(q) ||
           f.tags.some((t) => t.toLowerCase().includes(q)),
       );
     }
@@ -339,9 +342,12 @@ export default function DashboardPage({ account, onLogout }: DashboardPageProps)
                   className="dashboard__file-card"
                   title={file.fileName}
                 >
-                  <div className="dashboard__file-card-icon">
-                    <Icon size={36} strokeWidth={1.5} />
-                  </div>
+                  <FileThumbnail
+                    ownerName={ownerName}
+                    identifier={file.identifier}
+                    fileName={file.fileName}
+                    FallbackIcon={Icon}
+                  />
                   <div className="dashboard__file-card-info">
                     <span className="dashboard__file-card-name">{file.fileName}</span>
                     <span className="dashboard__file-card-meta">
@@ -366,16 +372,14 @@ export default function DashboardPage({ account, onLogout }: DashboardPageProps)
                         <Eye size={16} />
                       </button>
                     )}
-                    {file.description && (
-                      <button
-                        className="dashboard__icon-btn-sm"
-                        title="View notes"
-                        type="button"
-                        onClick={() => setNoteFile(file)}
-                      >
-                        <StickyNote size={16} />
-                      </button>
-                    )}
+                    <button
+                      className="dashboard__icon-btn-sm"
+                      title="View description"
+                      type="button"
+                      onClick={() => setDescriptionFile(file)}
+                    >
+                      <StickyNote size={16} />
+                    </button>
                     <button
                       className="dashboard__icon-btn-sm"
                       title={copiedId === file.id ? 'Copied!' : 'Share link'}
@@ -394,10 +398,7 @@ export default function DashboardPage({ account, onLogout }: DashboardPageProps)
                       onClick={() => {
                         void (async () => {
                           try {
-                            const b64 = await fetchFileContent(ownerName, file.identifier);
-                            const byteChars = atob(b64);
-                            const bytes = new Uint8Array(byteChars.length);
-                            for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i);
+                            const bytes = await fetchFileBytes(ownerName, file.identifier);
                             const blob = new Blob([bytes], { type: file.mimeType });
                             const url = URL.createObjectURL(blob);
                             const a = document.createElement('a');
@@ -439,8 +440,14 @@ export default function DashboardPage({ account, onLogout }: DashboardPageProps)
               return (
                 <div key={file.id} className="dashboard__list-row">
                   <span className="dashboard__list-row-name">
-                    <Icon size={18} strokeWidth={1.5} />
-                    {file.fileName}
+                    <FileThumbnail
+                      ownerName={ownerName}
+                      identifier={file.identifier}
+                      fileName={file.fileName}
+                      FallbackIcon={Icon}
+                      variant="row"
+                    />
+                    <span className="dashboard__list-row-filename">{file.fileName}</span>
                   </span>
                   <span className="dashboard__list-row-category">{catLabel}</span>
                   <span className="dashboard__list-row-size">{formatSize(file.sizeBytes)}</span>
@@ -456,16 +463,14 @@ export default function DashboardPage({ account, onLogout }: DashboardPageProps)
                         <Eye size={16} />
                       </button>
                     )}
-                    {file.description && (
-                      <button
-                        className="dashboard__icon-btn-sm"
-                        title="View notes"
-                        type="button"
-                        onClick={() => setNoteFile(file)}
-                      >
-                        <StickyNote size={16} />
-                      </button>
-                    )}
+                    <button
+                      className="dashboard__icon-btn-sm"
+                      title="View description"
+                      type="button"
+                      onClick={() => setDescriptionFile(file)}
+                    >
+                      <StickyNote size={16} />
+                    </button>
                     <button
                       className="dashboard__icon-btn-sm"
                       title={copiedId === file.id ? 'Copied!' : 'Share link'}
@@ -484,10 +489,7 @@ export default function DashboardPage({ account, onLogout }: DashboardPageProps)
                       onClick={() => {
                         void (async () => {
                           try {
-                            const b64 = await fetchFileContent(ownerName, file.identifier);
-                            const byteChars = atob(b64);
-                            const bytes = new Uint8Array(byteChars.length);
-                            for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i);
+                            const bytes = await fetchFileBytes(ownerName, file.identifier);
                             const blob = new Blob([bytes], { type: file.mimeType });
                             const url = URL.createObjectURL(blob);
                             const a = document.createElement('a');
@@ -558,21 +560,13 @@ export default function DashboardPage({ account, onLogout }: DashboardPageProps)
         onClose={() => setPreviewFile(null)}
       />
 
-      {/* Notes viewer modal */}
-      {noteFile && (
-        <div className="dashboard__modal-overlay" onClick={() => setNoteFile(null)}>
-          <div className="dashboard__modal" onClick={(e) => e.stopPropagation()}>
-            <div className="publish__header">
-              <h3>Notes — {noteFile.fileName}</h3>
-              <button className="dashboard__icon-btn-sm" onClick={() => setNoteFile(null)} type="button" aria-label="Close">
-                <X size={18} />
-              </button>
-            </div>
-            <div style={{ padding: '1rem 0', whiteSpace: 'pre-wrap', lineHeight: 1.65, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
-              {noteFile.description}
-            </div>
-          </div>
-        </div>
+      {/* Description viewer modal */}
+      {descriptionFile && (
+        <DescriptionDialog
+          ownerName={ownerName}
+          file={descriptionFile}
+          onClose={() => setDescriptionFile(null)}
+        />
       )}
     </div>
   );

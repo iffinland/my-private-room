@@ -18,9 +18,15 @@ export interface PrivateFile {
   tags: string[];
   /** ISO timestamp of when the file was published */
   uploadedAt: string;
-  /** Optional description / notes about the file */
+  /**
+   * Plain-text excerpt from QDN metadata. Used for search and as a fallback
+   * when the file predates the dedicated rich-description resource.
+   */
   description?: string;
-  thumbnailIdentifier: string | null;
+  /** Deterministic JSON resource that holds the sanitized rich description */
+  descriptionIdentifier: string;
+  /** Deterministic THUMBNAIL resource; absent resources fall back to an icon */
+  thumbnailIdentifier: string;
 }
 
 /** Raw QDN resource status response */

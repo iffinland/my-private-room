@@ -1,0 +1,83 @@
+/* ------------------------------------------------------------------ */
+/*  File card thumbnail                                               */
+/* ------------------------------------------------------------------ */
+
+.file-thumb {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 25% 20%, var(--accent-bg), transparent 60%),
+    var(--bg-surface-2);
+  border: 1px solid var(--border-default);
+}
+
+.file-thumb__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.file-thumb--card {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.file-thumb--row {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 8px;
+}
+
+.file-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.25s ease;
+}
+
+.file-thumb--card img {
+  position: absolute;
+  inset: 0;
+}
+
+.dashboard__file-card:hover .file-thumb--card img {
+  transform: scale(1.04);
+}
+
+.file-thumb__fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--accent-light);
+}
+
+.file-thumb__fallback--loading {
+  animation: file-thumb-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes file-thumb-pulse {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .file-thumb img,
+  .file-thumb__fallback--loading {
+    transition: none;
+    animation: none;
+  }
+}

@@ -335,8 +335,8 @@
 .dashboard__file-card {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 1.25rem;
+  gap: 0.55rem;
+  padding: 0.75rem;
   border-radius: 14px;
   background: var(--bg-surface-2);
   border: 1px solid var(--border-default);
@@ -360,7 +360,12 @@
   color: var(--accent-light);
 }
 
+.dashboard__file-card > .file-thumb {
+  margin-bottom: 0.2rem;
+}
+
 .dashboard__file-card-info {
+  padding: 0 0.2rem;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
@@ -401,7 +406,7 @@
   align-items: center;
   gap: 0.25rem;
   margin-top: auto;
-  padding-top: 0.5rem;
+  padding: 0.5rem 0.2rem 0;
   border-top: 1px solid var(--border-default);
   justify-content: flex-end;
   position: relative;
@@ -480,6 +485,13 @@
 }
 
 .dashboard__list-row-name svg { flex-shrink: 0; color: var(--accent-light); }
+
+.dashboard__list-row-filename {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .dashboard__list-row-name {
   white-space: nowrap;

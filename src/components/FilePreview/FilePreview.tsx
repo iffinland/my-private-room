@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { X, Loader2, EyeOff, FileText } from 'lucide-react';
 import type { PrivateFile } from '../../types';
-import { getFileUrl, fetchFileContent, canPreviewFile } from '../../services/fileService';
+import { getFileUrl, fetchFileText, canPreviewFile } from '../../services/fileService';
 import './FilePreview.css';
 
 interface FilePreviewProps {
@@ -10,6 +10,9 @@ interface FilePreviewProps {
 }
 
 type PreviewPhase = 'loading' | 'ready' | 'error';
+
+/** Do not render multi-megabyte text files into the DOM. */
+const MAX_TEXT_PREVIEW_CHARS = 200_000;
 
 export default function FilePreview({ file, onClose }: FilePreviewProps) {
   const [url, setUrl] = useState('');
@@ -32,10 +35,14 @@ export default function FilePreview({ file, onClose }: FilePreviewProps) {
 
         // Text-based files: fetch content for inline rendering
         if (mime.startsWith('text/') || mime === 'application/json') {
-          const b64 = await fetchFileContent(file.name, file.identifier);
+          // Decode as UTF-8; atob() alone would mangle non-Latin text.
+          const decoded = await fetchFileText(file.name, file.identifier);
           if (!active) return;
-          const decoded = atob(b64);
-          setTextContent(decoded);
+          setTextContent(
+            decoded.length > MAX_TEXT_PREVIEW_CHARS
+              ? `${decoded.slice(0, MAX_TEXT_PREVIEW_CHARS)}\n\n… preview truncated at ${MAX_TEXT_PREVIEW_CHARS.toLocaleString()} characters.`
+              : decoded,
+          );
           setPhase('ready');
           return;
         }
@@ -139,6 +146,15 @@ export default function FilePreview({ file, onClose }: FilePreviewProps) {
 
       return (
         <pre className="preview__text">{displayContent}</pre>
+      );
+    }
+
+    if ((mime.startsWith('text/') || mime === 'application/json') && !textContent) {
+      return (
+        <div className="preview__error">
+          <FileText size={32} strokeWidth={1.5} />
+          <span>This file is empty.</span>
+        </div>
       );
     }
 
