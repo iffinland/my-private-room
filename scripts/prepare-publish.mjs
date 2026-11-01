@@ -79,6 +79,11 @@ if (totalBytes > MAX_APP_BYTES) {
 const manifest = {
   application: 'My File Office',
   service: 'APP',
+  // Publish this directory, not an archive of it. Core only serves an APP as a
+  // website after Home/Core unpack a folder source (isZip=true); a ZIP uploaded
+  // as one file stays opaque and /render/.../ returns HTTP 404.
+  publishAs: 'directory',
+  entryPoint: 'index.html',
   preparedAt: new Date().toISOString(),
   note: 'Generated locally. No network request or QDN publication was performed.',
   totalBytes,
@@ -93,7 +98,9 @@ console.log('No network request or QDN publication was performed.');
 console.log('');
 console.log('Owner publication step (requires explicit authorization):');
 console.log('  1. Open Qortium Home 2.x and select the publishing account.');
-console.log('  2. Publish APP → folder → this project\'s dist/ directory.');
+console.log('  2. Publish APP → folder (directory source) → this project\'s dist/ directory.');
+console.log('     Do NOT select or upload a ZIP of dist/: Core would store an opaque archive.');
 console.log('  3. Name: "My File Office"; identifier: "myfileoffice".');
 console.log('  4. Keep the description accurate: public QDN file library, not private storage.');
-console.log('  5. Compare the published file list with the manifest before announcing the release.');
+console.log('  5. Run `npm run verify:live`; metadata.files must list index.html and assets/.');
+console.log('  6. Compare the published file list with the manifest before announcing the release.');

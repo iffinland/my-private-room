@@ -21,8 +21,18 @@ produce a working APP resource and has been removed.
 npm run verify:live
 ```
 
-GETs `/admin/status`, `/admin/info`, and the deployed APP resource/metadata. It
-never publishes, deletes, signs or transacts. Override with:
+GETs `/admin/status`, `/admin/info`, the deployed APP resource/metadata and the
+render root. It never publishes, deletes, signs or transacts. It fails when:
+
+- the node is not fully synced or the resource is not `READY`;
+- the published resource is not a directory APP (`metadata.files` must contain
+  `index.html`; a single `["<name>.zip"]` is an opaque archive and 404s);
+- `/render/APP/<name>/<id>/` does not return an HTML document;
+- a referenced asset returns not-OK;
+- when `dist/` exists, the served asset names or SHA-256 values differ from the
+  local build.
+
+Override with:
 
 ```bash
 QORTIUM_API_URL=http://127.0.0.1:24891 \
@@ -30,6 +40,10 @@ QDN_APP_NAME="My File Office" \
 QDN_APP_IDENTIFIER=myfileoffice \
 npm run verify:live
 ```
+
+The script is `scripts/verify-live.ts` and runs through `tsx`. The pure
+shape/bundle comparison helpers live in `src/lib/releaseArtifact.ts` and have
+Vitest coverage.
 
 ## Backup & restore scripts
 

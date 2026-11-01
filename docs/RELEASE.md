@@ -10,6 +10,28 @@ confidentiality.
 Publication is an owner-authorized write. This repository intentionally contains
 no CLI command that publishes to a live Qortium node.
 
+## Publish the directory, never a ZIP file
+
+Core only renders an APP as a website when the resource is a **directory**
+resource. Home 2 does that when the source is a folder: it uploads the folder
+archive with `isZip=true`, Core unpacks it, and `metadata.files` lists
+`index.html` plus `assets/...`.
+
+A ZIP selected or uploaded as a normal *file* is different. Home sends it as a
+single-file publish, Core stores it opaquely, and `metadata.files` is just
+`["<name>.zip"]`. `/arbitrary/APP/...` then returns that ZIP, while
+`/render/APP/.../` has no `index.html` and returns **HTTP 404**.
+
+The live `APP/My File Office/myfileoffice` resource was in exactly that state on
+2026-11-01: `READY`, `metadata.files = ["myfileoffice.zip"]`, render root `404`,
+and `/render/APP/My%20File%20Office/myfileoffice/myfileoffice.zip` `200`. The
+ZIP's `index.html` and asset hashes matched the local `dist/`, so the defect was
+the publication shape, not the build.
+
+`npm run verify:live` now fails on this shape and names the repair. When
+publishing, use **APP → folder/directory source → `dist/`**; do not select the
+`dist.zip`/`myfileoffice.zip` file.
+
 ## Required owner decisions before publication
 
 1. Product/privacy wording. The current wording must not imply confidentiality.
@@ -34,12 +56,16 @@ no CLI command that publishes to a live Qortium node.
    git diff --check
    ```
 
-3. Inspect `dist/publish-manifest.json`. It records every file, byte size and
-   SHA-256 digest in the release artifact. No network request is made.
+3. Inspect `dist/publish-manifest.json`. It records `publishAs: "directory"`,
+   `entryPoint: "index.html"`, every file, byte size and SHA-256 digest in the
+   release artifact. No network request is made.
 4. Confirm the manifest contains `index.html`, all `assets/*.js`, all
-   `assets/*.css`, the background images, the lazy PDF renderer chunk and the
-   pdf.js worker.
+   `assets/*.css`, `favicon.svg`, the background images, the lazy PDF renderer
+   chunk and the pdf.js worker.
 5. Record the source commit and artifact digest in the handoff.
+6. `npm run verify:live` must report `verdict: PASS`, a `publishedShape.status`
+   of `directory`, a `200` render root, matching served asset names and matching
+   asset SHA-256 values. `READY` alone is not sufficient.
 
 ## Publication (owner only, explicit authorization)
 

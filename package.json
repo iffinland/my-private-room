@@ -13,7 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "qdn:prepare": "node scripts/prepare-publish.mjs",
-    "verify:live": "node scripts/verify-live.mjs"
+    "verify:live": "tsx scripts/verify-live.ts"
   },
   "dependencies": {
     "lucide-react": "^1.23.0",

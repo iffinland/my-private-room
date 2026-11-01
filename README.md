@@ -59,12 +59,18 @@ npm run verify:live  # read-only node + deployed APP check
 npm run qdn:prepare  # verify dist/ and write a publication manifest (no network)
 ```
 
-`npm run verify:live` only performs GET requests. `npm run qdn:prepare` performs
-no network writes and does not publish.
+`npm run verify:live` only performs GET requests. It verifies that the published
+APP is a directory resource (`metadata.files` contains `index.html`), that the
+render root serves HTML, and — when `dist/` exists — that the served JS/CSS
+asset names and SHA-256 values match the local build. An opaque
+`["<name>.zip"]` resource is reported as the exact cause of a render-root 404.
+`npm run qdn:prepare` performs no network writes and does not publish.
 
 Publication is a separate, explicitly authorized owner action through Qortium
-Home's APP folder publishing flow. There is intentionally no CLI command that
-publishes to the live network. See [`docs/RELEASE.md`](docs/RELEASE.md).
+Home's APP **folder** publishing flow. Publish the `dist/` directory, never a ZIP
+of it: a ZIP uploaded as a file stays opaque and Core cannot render
+`/render/APP/.../`. There is intentionally no CLI command that publishes to the
+live network. See [`docs/RELEASE.md`](docs/RELEASE.md).
 
 ## Browser and format limits
 

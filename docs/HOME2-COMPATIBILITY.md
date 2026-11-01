@@ -69,6 +69,34 @@ PUBLISH_QDN_RESOURCE { ...resource, sourceToken }               // fallback
 - The app no longer publishes the old reference JSON scheme; existing resources
   remain untouched.
 
+## APP publication shape (render 404 vs 200)
+
+Home 2's APP frame loads the resource from the node render route:
+
+```text
+/render/APP/<name>/<identifier>/
+```
+
+Core serves that route only for a **directory** APP resource. The publication
+shape is visible in Core metadata:
+
+| Metadata `files` | Meaning | Render root |
+| --- | --- | --- |
+| `index.html`, `assets/...`, `favicon.svg` | Folder source unpacked with `isZip=true` | `200`, HTML |
+| `["<name>.zip"]` | ZIP uploaded as one file (`isZip` absent/false) | `404`, no `index.html` |
+
+The second row was observed live on 2026-11-01 for
+`APP/My File Office/myfileoffice`: status `READY`, `metadata.files =
+["myfileoffice.zip"]`, render root `404`, and
+`/render/APP/My%20File%20Office/myfileoffice/myfileoffice.zip` `200`. The ZIP
+contained the correct built `index.html`/assets (hashes matched local `dist/`);
+the defect was the publish shape, not the application build.
+
+Repair: publish the `dist/` **directory** through Home's APP folder source
+(`SELECT_QDN_PUBLISH_SOURCE` with `kind: 'directory'`). Do not publish a ZIP of
+`dist/` as a file. `npm run verify:live` now checks this shape and the served
+asset hashes; `READY` alone does not prove the app is renderable.
+
 ## Verification layers
 
 This document records source-level compatibility. The app's tests use a fake
@@ -76,3 +104,8 @@ This document records source-level compatibility. The app's tests use a fake
 asserts token-only payloads, refusal of legacy fields, batch parsing and failure
 handling. Real Home approval/read-back must be performed by the owner on a
 machine with Home installed; the VPS has no Home runtime.
+
+`npm run verify:live` is read-only and separates the layers: node sync,
+resource `READY`, published directory shape, render-root HTML, served asset
+names, and (when `dist/` exists) served asset SHA-256 values against the local
+build.
