@@ -28,9 +28,18 @@ and `/render/APP/My%20File%20Office/myfileoffice/myfileoffice.zip` `200`. The
 ZIP's `index.html` and asset hashes matched the local `dist/`, so the defect was
 the publication shape, not the build.
 
+The same failure recurred on 2026-11-02: the resource was republished as
+`dist-katalog.zip` (3 068 400 bytes). Its archive contained the corrected build
+under a top-level `dist/` directory (`index.html` and `favicon.svg` matched the
+fixed local build) plus an extra `dist/katalogi-sisu.zip`, but
+`metadata.files` was still `["dist-katalog.zip"]` and the render root still
+returned `404`. A newer or correct build inside a ZIP does not change the
+serving shape.
+
 `npm run verify:live` now fails on this shape and names the repair. When
 publishing, use **APP → folder/directory source → `dist/`**; do not select the
-`dist.zip`/`myfileoffice.zip` file.
+`dist.zip`/`myfileoffice.zip`/`dist-katalog.zip` file. Select the directory
+itself, not a parent folder or an archive of it.
 
 ## Required owner decisions before publication
 
