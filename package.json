@@ -12,7 +12,7 @@
     "restore": "bash scripts/restore.sh",
     "test": "vitest run",
     "test:watch": "vitest",
-    "qdn:prepare": "node scripts/prepare-publish.mjs",
+    "qdn:prepare": "tsx scripts/prepare-publish.ts",
     "verify:live": "tsx scripts/verify-live.ts"
   },
   "dependencies": {

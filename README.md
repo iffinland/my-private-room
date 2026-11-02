@@ -60,17 +60,20 @@ npm run qdn:prepare  # verify dist/ and write a publication manifest (no network
 ```
 
 `npm run verify:live` only performs GET requests. It verifies that the published
-APP is a directory resource (`metadata.files` contains `index.html`), that the
-render root serves HTML, and — when `dist/` exists — that the served JS/CSS
-asset names and SHA-256 values match the local build. An opaque
-`["<name>.zip"]` resource is reported as the exact cause of a render-root 404.
-`npm run qdn:prepare` performs no network writes and does not publish.
+APP file tree has `index.html` at its root, that the render root serves HTML,
+that no `dist/` wrapper or opaque ZIP was published, and — when
+`release/myfileoffice-app.zip` and `dist/` exist — that the live file list and
+served JS/CSS SHA-256 values match the local build. `npm run qdn:prepare`
+performs no network writes and does not publish; it writes the deterministic
+`release/myfileoffice-app.zip` whose **archive root** is the contents of
+`dist/`.
 
 Publication is a separate, explicitly authorized owner action through Qortium
-Home's APP **folder** publishing flow. Publish the `dist/` directory, never a ZIP
-of it: a ZIP uploaded as a file stays opaque and Core cannot render
-`/render/APP/.../`. There is intentionally no CLI command that publishes to the
-live network. See [`docs/RELEASE.md`](docs/RELEASE.md).
+Home's APP publishing flow. Publish `release/myfileoffice-app.zip` or select the
+`dist/` folder itself. Do not publish a ZIP whose root is `dist/`, and do not
+publish an opaque ZIP: either shape leaves no root `index.html` and Core returns
+HTTP 404 at `/render/APP/.../`. There is intentionally no CLI command that
+publishes to the live network. See [`docs/RELEASE.md`](docs/RELEASE.md).
 
 ## Browser and format limits
 

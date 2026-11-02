@@ -6,10 +6,17 @@
 npm run qdn:prepare
 ```
 
-Verifies `dist/` and writes `dist/publish-manifest.json` with every release file
-and its SHA-256 digest. It performs **no network request** and does not publish.
+Verifies `dist/`, writes `dist/publish-manifest.json` with every release file
+and its SHA-256 digest, and writes `release/myfileoffice-app.zip` — a
+deterministic archive of the **contents** of `dist/`, so `index.html` is at the
+archive root. It performs **no network request** and does not publish.
 Publication remains an explicitly authorized owner action in Qortium Home; see
 [`docs/RELEASE.md`](../docs/RELEASE.md).
+
+The ZIP layout is enforced in code and covered by Vitest:
+`src/lib/releasePackage.ts` rejects a `dist/index.html` wrapper, a missing root
+`index.html`, unsafe paths and duplicate entries, and the archive is read back
+and byte-compared before the manifest is written.
 
 The previous `scripts/publish.mjs` posted only `dist/index.html` with inline
 base64 to the Core API and used an inaccurate description. That path could not
@@ -25,10 +32,13 @@ GETs `/admin/status`, `/admin/info`, the deployed APP resource/metadata and the
 render root. It never publishes, deletes, signs or transacts. It fails when:
 
 - the node is not fully synced or the resource is not `READY`;
-- the published resource is not a directory APP (`metadata.files` must contain
+- the published resource is not a root-index APP (`metadata.files` must contain
   `index.html`; a single `["<name>.zip"]` is an opaque archive and 404s);
+- the published tree is nested under `dist/`;
 - `/render/APP/<name>/<id>/` does not return an HTML document;
 - a referenced asset returns not-OK;
+- when `release/myfileoffice-app.zip` exists, its entry list differs from
+  `metadata.files`;
 - when `dist/` exists, the served asset names or SHA-256 values differ from the
   local build.
 

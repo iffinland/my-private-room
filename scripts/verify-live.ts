@@ -24,6 +24,7 @@ import {
   compareEntryAssets,
   extractEntryAssetPaths,
 } from '../src/lib/releaseArtifact';
+import { normalizePackagePath, readStoredZip } from '../src/lib/releasePackage';
 
 const baseUrl = (process.env.QORTIUM_API_URL || 'http://127.0.0.1:24891').replace(/\/$/, '');
 const appName = process.env.QDN_APP_NAME || 'My File Office';
@@ -32,6 +33,7 @@ const appIdentifier = process.env.QDN_APP_IDENTIFIER || 'myfileoffice';
 const projectDir = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const distDir = join(projectDir, 'dist');
 const localIndexPath = join(distDir, 'index.html');
+const localPackagePath = join(projectDir, 'release', 'myfileoffice-app.zip');
 
 const asRecord = (value: unknown): Record<string, unknown> =>
   value !== null && typeof value === 'object' ? (value as Record<string, unknown>) : {};
@@ -123,9 +125,55 @@ async function main(): Promise<void> {
   }
   if (shape.status !== 'directory') {
     failures.push(
-      `${shape.message} Republish the built dist/ directory through Qortium Home's APP folder ` +
-        'source (SELECT_QDN_PUBLISH_SOURCE kind=directory); do not publish dist/ as one ZIP file.',
+      `${shape.message} Publish release/myfileoffice-app.zip (or the dist/ folder itself) through ` +
+        "Qortium Home's APP source flow so Core unpacks index.html at the archive root; " +
+        'do not publish a ZIP whose root is dist/.',
     );
+  }
+
+  const publishedFiles = Array.isArray(metadata.files)
+    ? metadata.files.map((value) => (typeof value === 'string' ? normalizePackagePath(value) : ''))
+        .filter(Boolean)
+    : [];
+  const nestedPublished = publishedFiles.filter((path) => path.startsWith('dist/'));
+  if (nestedPublished.length > 0) {
+    failures.push(
+      `Published file tree is nested under dist/ (${nestedPublished.slice(0, 3).join(', ')}...). ` +
+        'Core must serve index.html at the resource root; republish the archive that contains dist/* at its root.',
+    );
+  }
+
+  // When a prepared package exists, the live file list must be exactly that
+  // package. A READY resource with a stale or opaque file list is not a release.
+  let packageComparison: Record<string, unknown> | null = null;
+  if (existsSync(localPackagePath)) {
+    try {
+      const localPackageFiles = readStoredZip(new Uint8Array(readFileSync(localPackagePath)))
+        .map((entry) => normalizePackagePath(entry.path))
+        .sort();
+      const liveFiles = [...publishedFiles].sort();
+      const missingFromLive = localPackageFiles.filter((file) => !liveFiles.includes(file));
+      const unexpectedLive = liveFiles.filter((file) => !localPackageFiles.includes(file));
+      packageComparison = {
+        package: 'release/myfileoffice-app.zip',
+        localEntries: localPackageFiles.length,
+        liveEntries: liveFiles.length,
+        missingFromLive,
+        unexpectedLive,
+        matches: missingFromLive.length === 0 && unexpectedLive.length === 0,
+      };
+
+      if (!(packageComparison.matches as boolean) && shape.status === 'directory') {
+        failures.push(
+          `Published files differ from release/myfileoffice-app.zip. Missing live: [${missingFromLive.join(', ')}]; ` +
+            `not in the local package: [${unexpectedLive.join(', ')}].`,
+        );
+      }
+    } catch (error) {
+      failures.push(
+        `Unable to read release/myfileoffice-app.zip: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
   }
 
   const renderPath = `/render/APP/${encodedName}/${encodedIdentifier}/`;
@@ -228,6 +276,7 @@ async function main(): Promise<void> {
   }
 
   const report: Report = {
+    // entryPoint is reported in `app`; APP resources default to index.html.
     checkedAt: new Date().toISOString(),
     api: baseUrl,
     node: {
@@ -246,8 +295,10 @@ async function main(): Promise<void> {
       filename: stringOrNull(properties.filename),
       mimeType: stringOrNull(properties.mimeType),
       title: stringOrNull(metadata.title),
+      entryPoint: stringOrNull(metadata.entryPoint),
       files: Array.isArray(metadata.files) ? metadata.files : null,
       publishedShape: { status: shape.status, message: shape.message },
+      packageComparison,
     },
     render,
     assets,

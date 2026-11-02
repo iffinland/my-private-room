@@ -77,24 +77,31 @@ Home 2's APP frame loads the resource from the node render route:
 /render/APP/<name>/<identifier>/
 ```
 
-Core serves that route only for a **directory** APP resource. The publication
-shape is visible in Core metadata:
+Core serves that route only when the published **file tree** has an index file
+at its root. `Service.APP` itself does not inspect a ZIP's internal layout, so
+the same archive can be renderable or opaque depending on how it was published:
 
-| Metadata `files` | Meaning | Render root |
+| Published shape | `metadata.files` | Render root |
 | --- | --- | --- |
-| `index.html`, `assets/...`, `favicon.svg` | Folder source unpacked with `isZip=true` | `200`, HTML |
-| `["<name>.zip"]` | ZIP uploaded as one file (`isZip` absent/false) | `404`, no `index.html` |
+| ZIP root = `index.html`, `assets/…` | `index.html`, `assets/…` | `200`, HTML |
+| ZIP root = `dist/` wrapper, unpacked | `dist/index.html`, `dist/assets/…` | `404` |
+| ZIP stored as one file (`isZip` false) | `["<name>.zip"]` | `404` |
 
-The second row was observed live on 2026-11-01 for
+Home sets `isZip=true` for APP/WEBSITE ZIP sources (filename ending `.zip` or ZIP
+magic bytes) and Core unpacks them. A folder source is zipped from the selected
+folder's **contents**, so selecting `dist/` itself puts `index.html` at the
+archive root; selecting its parent puts `dist/` at the root.
+
+Observed live on 2026-11-01 and 2026-11-02 for
 `APP/My File Office/myfileoffice`: status `READY`, `metadata.files =
-["myfileoffice.zip"]`, render root `404`, and
-`/render/APP/My%20File%20Office/myfileoffice/myfileoffice.zip` `200`. The ZIP
-contained the correct built `index.html`/assets (hashes matched local `dist/`);
-the defect was the publish shape, not the application build.
+["myfileoffice.zip"]` then `["dist-katalog.zip"]`, render root `404`, while the
+raw archive under `/render/.../<name>.zip` returned `200`. The archives
+contained the correct built assets; the publish shape was the defect.
 
-Repair: publish the `dist/` **directory** through Home's APP folder source
-(`SELECT_QDN_PUBLISH_SOURCE` with `kind: 'directory'`). Do not publish a ZIP of
-`dist/` as a file. `npm run verify:live` now checks this shape and the served
+Repair: `npm run qdn:prepare` writes `release/myfileoffice-app.zip` with
+`index.html` at the archive root. Publish that ZIP (or the `dist/` folder
+itself) through Home's APP source flow. `npm run verify:live` checks the live
+shape, compares `metadata.files` with the local package, and verifies served
 asset hashes; `READY` alone does not prove the app is renderable.
 
 ## Verification layers
@@ -106,6 +113,7 @@ handling. Real Home approval/read-back must be performed by the owner on a
 machine with Home installed; the VPS has no Home runtime.
 
 `npm run verify:live` is read-only and separates the layers: node sync,
-resource `READY`, published directory shape, render-root HTML, served asset
-names, and (when `dist/` exists) served asset SHA-256 values against the local
-build.
+resource `READY`, published root shape (no `dist/` wrapper, no opaque ZIP),
+render-root HTML, served asset names, served asset SHA-256 values against the
+local build, and — when `release/myfileoffice-app.zip` exists — the live file
+list against the prepared package.
