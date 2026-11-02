@@ -116,9 +116,15 @@ async function main(): Promise<void> {
 
   const shape = classifyPublishedApp(metadata.files);
   const syncPercent = numberOrNull(status.syncPercent);
+  const isSynchronizing = status.isSynchronizing === true;
 
-  if (syncPercent !== null && syncPercent < 100) {
-    failures.push(`Node is not fully synchronized: ${syncPercent}%`);
+  // syncPercent can report 99 while the node is already serving QDN (rounding),
+  // so use Core's synchronization flag and only fail clearly-behind nodes.
+  if (isSynchronizing || (syncPercent !== null && syncPercent < 99)) {
+    failures.push(
+      `Node is not fully synchronized: ${syncPercent ?? 'unknown'}%` +
+        (isSynchronizing ? ' (isSynchronizing=true)' : ''),
+    );
   }
   if (appStatus.status !== 'READY') {
     failures.push(`Published app resource is not READY: ${String(appStatus.status ?? 'unknown')}`);
@@ -283,6 +289,7 @@ async function main(): Promise<void> {
       buildVersion: stringOrNull(info.buildVersion),
       buildTimestamp: numberOrNull(info.buildTimestamp),
       syncPercent,
+      isSynchronizing,
       height: numberOrNull(status.height),
       numberOfConnections: numberOrNull(status.numberOfConnections),
     },
