@@ -10,6 +10,12 @@ confidentiality.
 Publication is an owner-authorized write. This repository intentionally contains
 no CLI command that publishes to a live Qortium node.
 
+Live status on 2026-11-02: the deployed `APP/My File Office/myfileoffice` is
+still the opaque `dist-katalog.zip` resource (render root `404`). The corrected
+package is built and preview-verified; the overwrite is waiting for the name
+owner's signed Home publish. See
+[`INCIDENT-2026-11-02-myfileoffice-404.md`](INCIDENT-2026-11-02-myfileoffice-404.md).
+
 ## The APP package must have index.html at its archive root
 
 Qortium Core renders an APP as a website only when the *published file tree* has
